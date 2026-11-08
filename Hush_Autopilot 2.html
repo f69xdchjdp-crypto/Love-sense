@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hush Autopilot</title>
+<style>
+:root{--bg:#14101c;--panel:#1d1729;--line:#352b4a;--tx:#ece6f7;--mut:#9a8fb3;--ac:#e0568f;--ac2:#7c5cff;--ok:#4fd1a5;--bad:#ff6b6b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 Georgia,"Iowan Old Style",serif;padding:max(16px,env(safe-area-inset-top)) 16px 40px}
+h1{font-size:28px;margin:0;font-weight:600;letter-spacing:.2px}
+h2{font-size:18px;margin:0 0 12px;font-weight:600}
+.sub{color:var(--mut);margin:2px 0 18px;font-size:14px}
+.wrap{max-width:1000px;margin:auto;display:grid;gap:16px;grid-template-columns:1fr}
+@media(min-width:800px){.wrap{grid-template-columns:1fr 1fr}.full{grid-column:1/-1}}
+.p{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 4px;font-family:system-ui,sans-serif}
+.row{display:flex;gap:10px}.row>*{flex:1}
+input,select{width:100%;background:#120e1a;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:10px;font:15px system-ui,sans-serif}
+input[type=range]{padding:0;accent-color:var(--ac)}
+.v{float:right;color:var(--tx)}
+.chk{display:flex;gap:10px;align-items:center;margin:10px 0;color:var(--tx);font-family:system-ui,sans-serif;font-size:15px}
+.chk input{width:20px;height:20px;accent-color:var(--ac)}
+button{font:600 16px system-ui,sans-serif;border:0;border-radius:10px;padding:14px;color:#fff;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.go{background:var(--ac2)}.stop{background:#8c2f45}.sm{background:#2b2240;padding:10px 14px;font-size:14px}
+.badge{display:inline-block;padding:4px 10px;border-radius:99px;font:13px system-ui,sans-serif;border:1px solid var(--line)}
+.on{color:var(--ok);border-color:var(--ok)}.off{color:var(--bad);border-color:var(--bad)}
+.lvl{height:90px;display:flex;align-items:flex-end;gap:2px;margin:8px 0}
+.lvl i{flex:1;background:#2b2240;border-radius:2px 2px 0 0;transition:height .4s,background .4s}
+.big{font-size:32px;font-variant-numeric:tabular-nums}
+.tl{position:relative;height:18px;background:#120e1a;border-radius:9px;overflow:hidden;margin-top:8px}
+.tl b{position:absolute;top:0;bottom:0;background:var(--ac);opacity:.85}
+.tl u{position:absolute;top:0;bottom:0;width:2px;background:#fff}
+#log{height:170px;overflow:auto;font:12.5px/1.5 ui-monospace,Menlo,monospace;color:var(--mut)}
+#log .e{color:var(--bad)}#log .o{color:var(--ok)}
+.note{font-size:13px;color:var(--mut);font-family:system-ui,sans-serif;margin-top:8px}
+</style></head><body>
+<div class="wrap">
+<div class="full"><h1>Hush Autopilot</h1><div class="sub">Random, expert-style sessions for Lovense Game Mode. Keep this page open and in the foreground.</div></div>
+
+<div class="p">
+<h2>Connection <span id="badge" class="badge off">Not connected</span></h2>
+<div class="row"><div><label>Phone IP (from Game Mode)</label><input id="ip" value="192.168.0.120" inputmode="decimal"></div>
+<div><label>Port</label><input id="port" value="30010" inputmode="numeric"></div></div>
+<label>Connection type</label>
+<select id="proto"><option value="https">Secure (HTTPS, port 30011) – use if this page is on https or a hosted site</option><option value="http">Plain HTTP (port 30010) – use if you open this file locally</option></select>
+<div class="chk"><input type="checkbox" id="dry"><span>Dry run (simulate only, send nothing)</span></div>
+<div class="row"><button class="sm" id="test">Test connection</button><button class="sm" id="tease">Test 3s pulse</button></div>
+<div class="note">Lovense Remote → Discover → Game Mode shows your IP and ports. Phone and this device must be on the same Wi-Fi.</div>
+</div>
+
+<div class="p">
+<h2>Session builder</h2>
+<label>Total duration <span class="v" id="dv"></span></label>
+<input type="range" id="dur" min="0.5" max="24" step="0.5" value="24">
+<div class="row"><div><label>Min burst (mins)</label><input id="bmin" type="number" min="1" value="5"></div>
+<div><label>Max burst (mins)</label><input id="bmax" type="number" min="1" value="20"></div></div>
+<label>Bursts in session <span class="v" id="nv"></span></label>
+<input type="range" id="n" min="1" max="30" step="1" value="6">
+<div class="row"><div><label>Lowest intensity (1–20)</label><input id="imin" type="number" min="1" max="20" value="3"></div>
+<div><label>Highest intensity (1–20)</label><input id="imax" type="number" min="1" max="20" value="14"></div></div>
+<div class="chk"><input type="checkbox" id="pause" checked><span>Micro-pauses (2–8s breaks)</span></div>
+<div class="chk"><input type="checkbox" id="secret" checked><span>Surprise mode (hide next burst time)</span></div>
+<div class="row"><button class="go" id="start">Start session</button><button class="stop" id="stop">Stop</button></div>
+</div>
+
+<div class="p">
+<h2>Controller's repertoire</h2>
+<div class="note" style="margin:0 0 6px">Each burst is built from a random mix of the styles ticked here.</div>
+<div class="chk"><input type="checkbox" id="p_tease" checked><span>Slow tease – gentle, lazy swells</span></div>
+<div class="chk"><input type="checkbox" id="p_build" checked><span>Build-up – steady climb, then reset</span></div>
+<div class="chk"><input type="checkbox" id="p_pulse" checked><span>Pulse – on/off beat</span></div>
+<div class="chk"><input type="checkbox" id="p_fire" checked><span>Fire – fast, crackling flicker</span></div>
+<div class="chk"><input type="checkbox" id="p_heart" checked><span>Heartbeat – double thump, rest</span></div>
+<div class="chk"><input type="checkbox" id="p_wave" checked><span>Rolling wave – smooth rise and fall</span></div>
+<div class="chk"><input type="checkbox" id="p_edge" checked><span>Edging – climb, then sudden stop</span></div>
+<div class="chk"><input type="checkbox" id="p_surge" checked><span>Surge – quiet, then a sudden spike</span></div>
+<div class="chk"><input type="checkbox" id="p_stairs" checked><span>Staircase – step up every few seconds</span></div>
+<div class="chk"><input type="checkbox" id="p_wander" checked><span>Wander – unpredictable drifting</span></div>
+</div>
+
+<div class="p">
+<h2 id="phase">Idle</h2>
+<div class="big" id="clock">--:--:--</div>
+<div class="sub" id="next">Press Start to build a random schedule.</div>
+<div class="sub">Live level: <b id="lv">0</b> / 20</div>
+<div class="lvl" id="bars"></div>
+<div class="tl" id="tl"></div>
+</div>
+
+<div class="p">
+<h2>Manual</h2>
+<div class="row"><button class="sm" data-m="5">Low (5)</button><button class="sm" data-m="10">Med (10)</button><button class="sm" data-m="16">High (16)</button></div>
+<div class="note">Each manual press runs 5 seconds. Stop always cancels everything immediately.</div>
+</div>
+
+<div class="p full"><h2>Event log <button class="sm" id="clr" style="float:right;padding:4px 10px">Clear</button></h2><div id="log"></div>
+<div class="note">Safety: every command carries a 4-second timer, so if this page closes, loses Wi-Fi or the device sleeps, the toy stops by itself within seconds. Check in with your body and take breaks during very long sessions.</div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id),R=(a,b)=>a+Math.random()*(b-a);
+const F=['ip','port','proto','dur','bmin','bmax','n','imin','imax'],C=['pause','secret','dry','p_tease','p_build','p_pulse','p_fire','p_heart','p_wave','p_edge','p_surge','p_stairs','p_wander'];
+let S={run:false,plan:[],t0:0,t1:0,lvl:0,tgt:0,nextChg:0,pauseTo:0,wasIn:false,lastSent:0,lastLvl:-1,timer:0,lock:null};
+try{const s=JSON.parse(localStorage.getItem('hush')||'{}');F.forEach(k=>s[k]!=null&&($(k).value=s[k]));C.forEach(k=>s[k]!=null&&($(k).checked=s[k]))}catch(e){}
+function save(){try{const s={};F.forEach(k=>s[k]=$(k).value);C.forEach(k=>s[k]=$(k).checked);localStorage.setItem('hush',JSON.stringify(s))}catch(e){}}
+$('bars').innerHTML='<i></i>'.repeat(20);
+function ui(){$('dv').textContent=$('dur').value+' hrs';$('nv').textContent=$('n').value;save()}
+document.querySelectorAll('input,select').forEach(e=>e.addEventListener('input',ui));ui();
+function log(m,c){const d=document.createElement('div');if(c)d.className=c;d.textContent='['+new Date().toLocaleTimeString([], {hour12:false})+'] '+m;$('log').prepend(d);while($('log').children.length>80)$('log').lastChild.remove()}
+$('clr').onclick=()=>$('log').innerHTML='';
+function base(){const ip=$('ip').value.trim(),p=$('port').value.trim();
+ return $('proto').value==='https'?`https://${ip.replace(/\./g,'-')}.lovense.club:${p}`:`http://${ip}:${p}`}
+async function cmd(body){
+ if($('dry').checked){log('DRY '+JSON.stringify(body));return true}
+ try{const r=await fetch(base()+'/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({apiVer:1},body))});
+  const j=await r.json();badge(true);return j}catch(e){badge(false);log('ERROR: could not reach Lovense. Check IP, port, connection type and Wi-Fi.','e');return false}}
+function badge(ok){const b=$('badge');b.className='badge '+(ok?'on':'off');b.textContent=ok?'Connected':'Offline / refused'}
+const vib=l=>cmd({command:'Function',action:'Vibrate:'+l,timeSec:4});
+const halt=()=>cmd({command:'Function',action:'Stop',timeSec:0});
+$('test').onclick=async()=>{log('Testing connection…');const j=await cmd({command:'GetToys'});if(j&&j!==true){const t=j.data&&j.data.toys?JSON.parse(typeof j.data.toys==='string'?j.data.toys:JSON.stringify(j.data.toys)):{};const k=Object.values(t);log(k.length?'Toy found: '+k.map(x=>x.name+' ('+x.status+')').join(', '):'Server reached. No toy listed.','o')}else if(j===true)log('Dry run OK','o')};
+$('tease').onclick=()=>manual(8,3);
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>manual(+b.dataset.m,5));
+async function manual(l,s){log('Manual '+l+' for '+s+'s');await cmd({command:'Function',action:'Vibrate:'+l,timeSec:s});show(l);setTimeout(()=>{if(!S.run)show(0)},s*1000)}
+function show(l){S.lvl=l;$('lv').textContent=Math.round(l);[...$('bars').children].forEach((b,i)=>{const on=i<Math.round(l);b.style.height=(18+i*4)+'%';b.style.background=on?'var(--ac)':''})}
+function makePlan(total,n,mn,mx){
+ let d=Array.from({length:n},()=>R(mn,mx)*6e4),s=d.reduce((a,b)=>a+b,0);
+ if(s>total*.85){const k=total*.85/s;d=d.map(x=>x*k);s=total*.85}
+ const w=Array.from({length:n+1},()=>R(.15,1)),ws=w.reduce((a,b)=>a+b,0),free=total-s;
+ let t=0,plan=[];for(let i=0;i<n;i++){t+=free*w[i]/ws;plan.push({s:t,d:d[i],done:false});t+=d[i]}return plan}
+function fmt(ms){ms=Math.max(0,ms);const s=Math.floor(ms/1000);return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(x=>String(x).padStart(2,'0')).join(':')}
+$('start').onclick=async()=>{
+ if(S.run)return;
+ let mn=+$('bmin').value,mx=Math.max(mn,+$('bmax').value),lo=+$('imin').value,hi=Math.max(lo,+$('imax').value);
+ const total=+$('dur').value*36e5;
+ S.plan=makePlan(total,+$('n').value,mn,mx);S.t0=Date.now();S.t1=S.t0+total;S.run=true;S.wasIn=false;S.pauseTo=0;S.nextChg=0;S.lvl=lo;S.tgt=lo;
+ try{if(navigator.wakeLock)S.lock=await navigator.wakeLock.request('screen')}catch(e){}
+ const tl=$('tl');tl.innerHTML='';
+ if(!$('secret').checked)S.plan.forEach(b=>{const e=document.createElement('b');e.style.left=b.s/total*100+'%';e.style.width=Math.max(.3,b.d/total*100)+'%';tl.appendChild(e)});
+ const u=document.createElement('u');u.id='now';tl.appendChild(u);
+ log('Session started: '+$('dur').value+' hrs, '+S.plan.length+' bursts planned.','o');
+ S.timer=setInterval(tick,1000);tick()};
+async function stopAll(m){clearInterval(S.timer);S.run=false;if(S.lock){try{S.lock.release()}catch(e){}S.lock=null}
+ S.lastLvl=-1;await halt();show(0);$('phase').textContent='Idle';$('clock').textContent='--:--:--';$('next').textContent=m||'Stopped.';log(m||'Stopped.','o')}
+$('stop').onclick=()=>{if(S.run)stopAll('Stopped by you.');else{halt();show(0);log('Stop sent.')}};
+function tick(){
+ if(!S.run)return;const now=Date.now(),el=now-S.t0,tot=S.t1-S.t0;
+ if(now>=S.t1)return stopAll('Session complete.');
+ $('now').style.left=el/tot*100+'%';
+ const cur=S.plan.find(b=>el>=b.s&&el<b.s+b.d),nxt=S.plan.find(b=>b.s>el),left=S.plan.filter(b=>!b.done&&b.s+b.d>el).length;
+ if(!cur){
+  if(S.wasIn){S.wasIn=false;S.lastLvl=-1;halt();show(0);log('Burst finished.')}
+  $('phase').textContent='Silent monitoring';$('clock').textContent=fmt(S.t1-now)+' left';
+  $('next').textContent=nxt?($('secret').checked?'Next burst: ??? ('+left+' to go)':'Next burst in '+fmt(nxt.s-el)):'No more bursts.';return}
+ const lo=+$('imin').value,hi=Math.max(lo,+$('imax').value);
+ if(!S.wasIn){S.wasIn=true;S.lvl=lo;S.tgt=lo;S.nextChg=0;S.pat=null;log('Burst started ('+Math.round(cur.d/6e4)+' min).','o')}
+ $('phase').textContent='Active burst';$('clock').textContent=fmt(cur.s+cur.d-el)+' left';$('next').textContent='Riding the wave…';
+ if(now<S.pauseTo){show(0);return}
+ if(S.pauseTo&&now>=S.pauseTo){S.pauseTo=0;S.lvl=Math.max(lo,S.lvl*.6)}
+ if($('pause').checked&&Math.random()<1/50){const p=R(2,8);S.pauseTo=now+p*1000;S.lastLvl=-1;halt();show(0);log('Micro-pause '+p.toFixed(0)+'s');return}
+ if(!S.pat||now>=S.patEnd)pick(now);
+ const t=(now-S.patT0)/1000;let L;
+ if(S.pat.n==='wander'){
+  if(now>=S.nextChg){const r=Math.random(),span=hi-lo;
+   S.tgt=r<.55?lo+span*R(.3,.65):r<.8?lo+span*R(.75,1):lo+span*R(0,.25);
+   S.nextChg=now+R(4,16)*1000}
+  S.lvl+=(S.tgt-S.lvl)*.3+R(-.4,.4);L=Math.round(S.lvl)}
+ else L=Math.round(gen(S.pat,t,lo,hi));
+ L=L<=0?0:Math.min(hi,Math.max(lo,L));
+ $('next').textContent='Style: '+S.pat.label;
+ show(L);
+ if(L===0){if(S.lastLvl!==0){S.lastLvl=0;halt()}return}
+ if(L!==S.lastLvl||now-S.lastSent>3000){S.lastLvl=L;S.lastSent=now;vib(L)}}
+const PATS={tease:['Slow tease',40,90],build:['Build-up',40,120],pulse:['Pulse',15,40],fire:['Fire',8,20],heart:['Heartbeat',20,45],wave:['Rolling wave',30,80],edge:['Edging',30,70],surge:['Surge',25,60],stairs:['Staircase',48,48],wander:['Wander',30,90]};
+function pick(now){
+ let ks=Object.keys(PATS).filter(k=>$('p_'+k).checked);if(!ks.length)ks=['wander'];
+ if(ks.length>1&&S.pat)ks=ks.filter(k=>k!==S.pat.n);
+ const k=ks[Math.floor(Math.random()*ks.length)],P=PATS[k],dur=R(P[1],P[2]);
+ S.pat={n:k,label:P[0],dur,per:k==='tease'?R(20,45):R(10,20),beat:Math.random()<.5?1:2,top:R(.6,1)};
+ S.patT0=now;S.patEnd=now+dur*1000;
+ if(k==='wander'){S.nextChg=0;S.tgt=S.lvl}
+ log('Style: '+P[0]+' ('+Math.round(dur)+'s)')}
+function gen(p,t,lo,hi){
+ const sp=hi-lo,cos=x=>.5-.5*Math.cos(2*Math.PI*x);
+ switch(p.n){
+  case 'tease':return lo+sp*(.1+.3*cos(t/p.per));
+  case 'build':return lo+sp*Math.min(1,t/(p.dur*.9));
+  case 'pulse':return Math.floor(t/p.beat)%2?lo:lo+sp*p.top;
+  case 'fire':return Math.random()<.55?lo+sp*R(.6,1):lo+sp*R(0,.2);
+  case 'heart':{const k=Math.floor(t)%5;return k===0||k===2?lo+sp*.85:lo+sp*.1}
+  case 'wave':return lo+sp*(.15+.7*cos(t/p.per));
+  case 'edge':{const c=p.dur*.8;return t<c?lo+sp*Math.min(1,.3+.7*t/c):0}
+  case 'surge':return t>p.dur-R(3,5)?lo+sp*R(.85,1):lo+sp*R(.05,.2);
+  case 'stairs':return lo+sp*Math.min(1,(Math.floor(t/8)+1)/6);
+ }return lo}
+window.addEventListener('pagehide',()=>{if(S.run)halt()});
+</script></body></html>
