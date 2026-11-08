@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lovense Autonomous Wave Engine</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            900: '#4c1d95',
+                        },
+                        neon: {
+                            cyan: '#00f3ff',
+                            pink: '#ff007f',
+                            purple: '#9d00ff'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #090a0f;
+            color: #e2e8f0;
+        }
+        .glow-box {
+            box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.25);
+        }
+        .glow-box-active {
+            box-shadow: 0 0 35px 0px rgba(0, 243, 255, 0.4);
+        }
+        .bg-grid {
+            background-image: radial-gradient(rgba(139, 92, 246, 0.12) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111827;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-grid flex flex-col justify-between text-slate-200">
+
+    <!-- Top Navigation / Header -->
+    <header class="border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-neon-purple flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight bg-gradient-to-r from-white via-slate-200 to-brand-400 bg-clip-text text-transparent">
+                        Lovense Autonomous Wave Engine
+                    </h1>
+                    <p class="text-xs text-slate-400">Local Game Mode Intelligent Controller</p>
+                </div>
+            </div>
+            
+            <!-- Connection Quick Status Badge -->
+            <div id="connectionBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900 border border-slate-800 text-slate-400">
+                <span class="w-2 h-2 rounded-full bg-slate-600 animate-pulse" id="statusDot"></span>
+                <span id="statusBadgeText">Disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: Controls & Configurations (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Card 1: Network / Connection Setup -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-base font-semibold flex items-center gap-2 text-white">
+                            <i class="fa-solid fa-wifi text-brand-400"></i> Local Game Mode Link
+                        </h2>
+                        <button id="btnTestConnection" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-brand-400 border border-slate-700 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plug"></i> Test Ping
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Phone Local IP Address</label>
+                            <input type="text" id="ipAddress" value="192.168.1.50" placeholder="e.g. 192.168.1.50" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-brand-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Port</label>
+                            <input type="text" id="portNumber" value="20010" placeholder="20010" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-brand-500 transition">
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-2">
+                        Open <span class="text-slate-400 font-medium">Lovense Remote &gt; Discover &gt; Game Mode</span> to view your local IP and Port.
+                    </p>
+                </div>
+
+                <!-- Card 2: Session Timings & Parameters -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box backdrop-blur-sm space-y-5">
+                    <h2 class="text-base font-semibold flex items-center gap-2 text-white border-b border-slate-800 pb-3">
+                        <i class="fa-solid fa-sliders text-brand-400"></i> Autonomous Session Builder
+                    </h2>
+
+                    <!-- Total Session Window -->
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-slate-300 mb-1">
+                            <span>Total Session Duration (Hours)</span>
+                            <span id="sessionDurationVal" class="text-brand-400 font-semibold font-mono">8.0 hrs</span>
+                        </label>
+                        <input type="range" id="sessionDuration" min="0.5" max="24" step="0.5" value="8" class="w-full accent-brand-500 bg-slate-950 rounded-lg h-2 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
+                            <span>30 mins</span>
+                            <span>12 hrs</span>
+                            <span>24 hrs</span>
+                        </div>
+                    </div>
+
+                    <!-- Burst Duration Range -->
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Min Burst (Mins)</label>
+                            <input type="number" id="minBurst" min="1" max="60" value="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-brand-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Max Burst (Mins)</label>
+                            <input type="number" id="maxBurst" min="1" max="120" value="20" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 font-mono focus:outline-none focus:border-brand-500">
+                        </div>
+                    </div>
+
+                    <!-- Number of Bursts across session -->
+                    <div>
+                        <label class="flex justify-between text-xs font-medium text-slate-300 mb-1">
+                            <span>Target Burst Count per Session</span>
+                            <span id="burstCountVal" class="text-brand-400 font-semibold font-mono">6 bursts</span>
+                        </label>
+                        <input type="range" id="burstCount" min="1" max="30" value="6" class="w-full accent-brand-500 bg-slate-950 rounded-lg h-2 cursor-pointer">
+                    </div>
+
+                    <!-- Vibration Intensity Range (1 - 20) -->
+                    <div class="pt-2">
+                        <label class="flex justify-between text-xs font-medium text-slate-300 mb-1">
+                            <span>Allowed Intensity Range (Lovense 1-20)</span>
+                            <span class="text-brand-400 font-semibold font-mono"><span id="minIntensityVal">3</span> - <span id="maxIntensityVal">18</span></span>
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <input type="range" id="minIntensity" min="1" max="20" value="3" class="w-full accent-brand-500 bg-slate-950 rounded-lg h-2 cursor-pointer">
+                            <input type="range" id="maxIntensity" min="1" max="20" value="18" class="w-full accent-brand-500 bg-slate-950 rounded-lg h-2 cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Options & Toggles -->
+                    <div class="pt-3 border-t border-slate-800/80 space-y-3">
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs text-slate-300 group-hover:text-white transition">Enable Organic Micro-Pauses (2-8s breaks)</span>
+                            <input type="checkbox" id="chkMicroPauses" checked class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-brand-600 focus:ring-brand-500 accent-brand-500">
+                        </label>
+                        <label class="flex items-center justify-between cursor-pointer group">
+                            <span class="text-xs text-slate-300 group-hover:text-white transition">Keep Next Burst Time Secret (Surprise Mode)</span>
+                            <input type="checkbox" id="chkSurpriseMode" checked class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-brand-600 focus:ring-brand-500 accent-brand-500">
+                        </label>
+                    </div>
+
+                    <!-- Start / Emergency Kill Buttons -->
+                    <div class="pt-4 flex items-center gap-3">
+                        <button id="btnStart" class="flex-1 py-3.5 px-4 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand-600 to-neon-purple hover:from-brand-500 hover:to-brand-600 text-white shadow-lg shadow-brand-600/30 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> Start Session
+                        </button>
+                        <button id="btnStop" disabled class="py-3.5 px-5 rounded-xl font-semibold text-sm bg-rose-600/20 text-rose-400 hover:bg-rose-600 hover:text-white border border-rose-500/30 transition flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+                            <i class="fa-solid fa-power-off"></i> STOP
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Real-Time Engine Monitor & Visualizer (7 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+
+                <!-- Main Status & Real-Time Wave Monitor -->
+                <div id="monitorCard" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box backdrop-blur-sm relative overflow-hidden transition-all duration-500">
+                    
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <span id="stateTag" class="px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-slate-800 text-slate-400">
+                                ENGINE IDLE
+                            </span>
+                            <h3 class="text-xl font-bold text-white mt-1" id="mainStatusTitle">System Ready</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">Total Time Remaining</span>
+                            <span id="sessionTimerDisplay" class="text-2xl font-bold font-mono text-slate-200">00:00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Vibration Gauge / Meter -->
+                    <div class="my-6 bg-slate-950 rounded-xl p-4 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-xs mb-2">
+                            <span class="text-slate-400 flex items-center gap-2">
+                                <i class="fa-solid fa-wave-square text-neon-cyan"></i> Live Output Modulation
+                            </span>
+                            <span id="liveLevelText" class="font-mono text-neon-cyan font-bold text-sm">LEVEL 0 / 20</span>
+                        </div>
+                        
+                        <!-- Progress Bar for Current Vibration -->
+                        <div class="w-full bg-slate-900 h-4 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                            <div id="vibrationBar" class="h-full rounded-full bg-gradient-to-r from-brand-600 via-neon-cyan to-neon-pink transition-all duration-200 w-0"></div>
+                        </div>
+
+                        <!-- Realtime Canvas Waveform Animation -->
+                        <div class="mt-4 h-24 w-full bg-slate-950/60 rounded-lg overflow-hidden border border-slate-800/50 relative">
+                            <canvas id="waveCanvas" class="w-full h-full block"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Next Event & Session Info Cards -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-950/50 border border-slate-800/80 rounded-xl p-3.5">
+                            <span class="text-[11px] text-slate-500 uppercase tracking-wider block font-semibold">Current Activity</span>
+                            <span id="currentActivityDesc" class="text-xs text-slate-300 font-medium mt-0.5 block">Awaiting start click...</span>
+                        </div>
+                        <div class="bg-slate-950/50 border border-slate-800/80 rounded-xl p-3.5">
+                            <span class="text-[11px] text-slate-500 uppercase tracking-wider block font-semibold">Next Action Window</span>
+                            <span id="nextBurstCountdown" class="text-xs font-mono text-brand-400 font-medium mt-0.5 block">--:--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Activity Log -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box backdrop-blur-sm">
+                    <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                            <i class="fa-solid fa-list-ul text-brand-400"></i> Event Telemetry Log
+                        </h3>
+                        <button id="btnClearLog" class="text-[11px] text-slate-500 hover:text-slate-300 transition">Clear Log</button>
+                    </div>
+                    <div id="eventLog" class="h-44 overflow-y-auto font-mono text-xs space-y-1.5 text-slate-400 pr-2">
+                        <div class="text-slate-600 italic">[System] Initialization complete. Set parameters and click Start Session.</div>
+                    </div>
+                </div>
+
+                <!-- Quick Manual Overrides / Manual Pulse Test -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 glow-box backdrop-blur-sm flex items-center justify-between">
+                    <span class="text-xs text-slate-300 font-medium flex items-center gap-2">
+                        <i class="fa-solid fa-hand-pointer text-brand-400"></i> Direct Manual Tease (5s Burst)
+                    </span>
+                    <div class="flex gap-2">
+                        <button onclick="triggerManualBurst(5)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200 rounded-lg border border-slate-700 transition">Low (5)</button>
+                        <button onclick="triggerManualBurst(12)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-brand-400 rounded-lg border border-slate-700 transition">Med (12)</button>
+                        <button onclick="triggerManualBurst(20)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-neon-pink rounded-lg border border-slate-700 transition">Max (20)</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/60 py-4 text-center text-xs text-slate-500">
+        Lovense Game Mode Wave Engine &bull; Client-Side HTTP API &bull; No External Servers Required
+    </footer>
+
+    <!-- Application JavaScript Engine -->
+    <script>
+        // --- APPLICATION STATE ---
+        const state = {
+            isRunning: false,
+            sessionTotalMs: 0,
+            sessionRemainingMs: 0,
+            burstsSchedule: [],
+            currentBurstIndex: -1,
+            isBurstActive: false,
+            currentVibeLevel: 0,
+            sessionTimerId: null,
+            waveEngineTimerId: null,
+            nextEventTimerId: null,
+            lastSentLevel: -1,
+            waveTimeOffset: 0,
+            isMicroPaused: false
+        };
+
+        // --- DOM ELEMENTS ---
+        const ipInput = document.getElementById('ipAddress');
+        const portInput = document.getElementById('portNumber');
+        const sessionDurationInput = document.getElementById('sessionDuration');
+        const sessionDurationVal = document.getElementById('sessionDurationVal');
+        const minBurstInput = document.getElementById('minBurst');
+        const maxBurstInput = document.getElementById('maxBurst');
+        const burstCountInput = document.getElementById('burstCount');
+        const burstCountVal = document.getElementById('burstCountVal');
+        const minIntensityInput = document.getElementById('minIntensity');
+        const maxIntensityInput = document.getElementById('maxIntensity');
+        const minIntensityVal = document.getElementById('minIntensityVal');
+        const maxIntensityVal = document.getElementById('maxIntensityVal');
+        const chkMicroPauses = document.getElementById('chkMicroPauses');
+        const chkSurpriseMode = document.getElementById('chkSurpriseMode');
+
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const btnTestConnection = document.getElementById('btnTestConnection');
+        const btnClearLog = document.getElementById('btnClearLog');
+
+        const statusDot = document.getElementById('statusDot');
+        const statusBadgeText = document.getElementById('statusBadgeText');
+        const connectionBadge = document.getElementById('connectionBadge');
+        
+        const monitorCard = document.getElementById('monitorCard');
+        const stateTag = document.getElementById('stateTag');
+        const mainStatusTitle = document.getElementById('mainStatusTitle');
+        const sessionTimerDisplay = document.getElementById('sessionTimerDisplay');
+        const liveLevelText = document.getElementById('liveLevelText');
+        const vibrationBar = document.getElementById('vibrationBar');
+        const currentActivityDesc = document.getElementById('currentActivityDesc');
+        const nextBurstCountdown = document.getElementById('nextBurstCountdown');
+        const eventLog = document.getElementById('eventLog');
+        const waveCanvas = document.getElementById('waveCanvas');
+        const ctx = waveCanvas.getContext('2d');
+
+        // Wave history buffer for canvas drawing
+        const waveHistory = new Array(150).fill(0);
+
+        // --- INITIALIZATION & UI LISTENERS ---
+        window.onload = () => {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            drawWaveform();
+        };
+
+        function resizeCanvas() {
+            waveCanvas.width = waveCanvas.parentElement.clientWidth;
+            waveCanvas.height = waveCanvas.parentElement.clientHeight;
+        }
+
+        // Slider value updates
+        sessionDurationInput.addEventListener('input', (e) => {
+            sessionDurationVal.innerText = `${parseFloat(e.target.value).toFixed(1)} hrs`;
+        });
+
+        burstCountInput.addEventListener('input', (e) => {
+            burstCountVal.innerText = `${e.target.value} bursts`;
+        });
+
+        minIntensityInput.addEventListener('input', (e) => {
+            let minVal = parseInt(e.target.value);
+            let maxVal = parseInt(maxIntensityInput.value);
+            if (minVal > maxVal) {
+                maxIntensityInput.value = minVal;
+                maxIntensityVal.innerText = minVal;
+            }
+            minIntensityVal.innerText = minVal;
+        });
+
+        maxIntensityInput.addEventListener('input', (e) => {
+            let maxVal = parseInt(e.target.value);
+            let minVal = parseInt(minIntensityInput.value);
+            if (maxVal < minVal) {
+                minIntensityInput.value = maxVal;
+                minIntensityVal.innerText = maxVal;
+            }
+            maxIntensityVal.innerText = maxVal;
+        });
+
+        btnClearLog.addEventListener('click', () => {
+            eventLog.innerHTML = `<div class="text-slate-600 italic">[System] Log cleared.</div>`;
+        });
+
+        // --- LOVENSE HTTP API COMMUNICATIONS ---
+        async function sendLovenseCommand(actionString) {
+            const ip = ipInput.value.trim();
+            const port = portInput.value.trim();
+            const url = `http://${ip}:${port}/command`;
+
+            const payload = {
+                command: "Function",
+                action: actionString,
+                timeSec: 0,
+                apiVer: 1
+            };
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    setConnectionStatus(true, "Connected");
+                    return true;
+                } else {
+                    setConnectionStatus(false, "Http Error");
+                    return false;
+                }
+            } catch (err) {
+                setConnectionStatus(false, "Offline / Refused");
+                return false;
+            }
+        }
+
+        function setConnectionStatus(connected, text) {
+            if (connected) {
+                statusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-ping";
+                connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-950/60 border border-emerald-800 text-emerald-300";
+                statusBadgeText.innerText = text;
+            } else {
+                statusDot.className = "w-2 h-2 rounded-full bg-rose-500";
+                connectionBadge.className = "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-rose-950/60 border border-rose-900 text-rose-300";
+                statusBadgeText.innerText = text;
+            }
+        }
+
+        btnTestConnection.addEventListener('click', async () => {
+            logEvent("Testing connection to Lovense Game Mode local server...", "info");
+            const success = await sendLovenseCommand("Vibrate:0");
+            if (success) {
+                logEvent("SUCCESS: Connected to Lovense local server!", "success");
+            } else {
+                logEvent("ERROR: Could not reach Lovense server. Check IP, Port, and Wi-Fi.", "error");
+            }
+        });
+
+        // --- SESSION SCHEDULER & GENERATOR ---
+        function generateSchedule() {
+            const totalHours = parseFloat(sessionDurationInput.value);
+            const totalMs = totalHours * 60 * 60 * 1000;
+            const targetCount = parseInt(burstCountInput.value);
+            const minBurstMs = parseInt(minBurstInput.value) * 60 * 1000;
+            const maxBurstMs = parseInt(maxBurstInput.value) * 60 * 1000;
+
+            const schedule = [];
+            // Divide session duration into time slots for uniform distribution with randomness
+            const slotWindow = totalMs / targetCount;
+
+            for (let i = 0; i < targetCount; i++) {
+                const slotStart = i * slotWindow;
+                // Burst length randomly chosen
+                const burstDuration = Math.floor(Math.random() * (maxBurstMs - minBurstMs + 1)) + minBurstMs;
+                
+                // Random start time within slot
+                const maxOffset = Math.max(0, slotWindow - burstDuration - 30000); // 30s buffer
+                const randomOffset = Math.floor(Math.random() * maxOffset);
+                const startTime = Math.floor(slotStart + randomOffset);
+                const endTime = startTime + burstDuration;
+
+                schedule.push({
+                    id: i + 1,
+                    startTime,
+                    endTime,
+                    durationMs: burstDuration
+                });
+            }
+
+            return schedule;
+        }
+
+        // --- START / STOP LOGIC ---
+        btnStart.addEventListener('click', () => {
+            if (state.isRunning) return;
+
+            // Generate session bursts
+            const schedule = generateSchedule();
+            const totalHours = parseFloat(sessionDurationInput.value);
+            
+            state.isRunning = true;
+            state.sessionTotalMs = totalHours * 60 * 60 * 1000;
+            state.sessionRemainingMs = state.sessionTotalMs;
+            state.burstsSchedule = schedule;
+            state.currentBurstIndex = -1;
+            state.isBurstActive = false;
+            state.waveTimeOffset = 0;
+
+            // Update UI
+            btnStart.disabled = true;
+            btnStart.classList.add('opacity-50', 'cursor-not-allowed');
+            btnStop.disabled = false;
+            btnStop.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            logEvent(`Session started! Total time: ${totalHours} hrs. Scheduled ${schedule.length} bursts.`, "success");
+
+            // Main tick timer (every 1 second)
+            state.sessionTimerId = setInterval(sessionTick, 1000);
+            
+            // Wave engine timer (updates vibration levels every 250ms for smooth transitions)
+            state.waveEngineTimerId = setInterval(waveEngineTick, 250);
+        });
+
+        btnStop.addEventListener('click', () => {
+            stopSession("Manual Emergency Stop triggered by user.");
+        });
+
+        function stopSession(reason) {
+            state.isRunning = false;
+            clearInterval(state.sessionTimerId);
+            clearInterval(state.waveEngineTimerId);
+
+            // Kill vibration
+            sendVibrationLevel(0);
+            state.currentVibeLevel = 0;
+            state.isBurstActive = false;
+
+            // Reset UI
+            btnStart.disabled = false;
+            btnStart.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnStop.disabled = true;
+            btnStop.classList.add('opacity-50', 'cursor-not-allowed');
+
+            stateTag.className = "px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-slate-800 text-slate-400";
+            stateTag.innerText = "ENGINE IDLE";
+            mainStatusTitle.innerText = "Session Stopped";
+            currentActivityDesc.innerText = reason;
+            nextBurstCountdown.innerText = "--:--";
+
+            updateVibrationBar(0);
+            logEvent(`[STOP] ${reason}`, "error");
+        }
+
+        // --- MAIN TIMER TICK (1 SEC) ---
+        function sessionTick() {
+            if (!state.isRunning) return;
+
+            state.sessionRemainingMs -= 1000;
+            const elapsedTime = state.sessionTotalMs - state.sessionRemainingMs;
+
+            // Check session completion
+            if (state.sessionRemainingMs <= 0) {
+                stopSession("Session Completed Successfully!");
+                return;
+            }
+
+            // Update Timer UI
+            sessionTimerDisplay.innerText = formatMsToHMS(state.sessionRemainingMs);
+
+            // Determine if current time falls into any scheduled burst
+            let activeBurst = null;
+            let nextUpcomingBurst = null;
+
+            for (let i = 0; i < state.burstsSchedule.length; i++) {
+                const burst = state.burstsSchedule[i];
+                if (elapsedTime >= burst.startTime && elapsedTime <= burst.endTime) {
+                    activeBurst = burst;
+                    state.currentBurstIndex = i;
+                } else if (elapsedTime < burst.startTime && !nextUpcomingBurst) {
+                    nextUpcomingBurst = burst;
+                }
+            }
+
+            // Handle state transitions
+            if (activeBurst) {
+                if (!state.isBurstActive) {
+                    // Just started a burst
+                    state.isBurstActive = true;
+                    logEvent(`[BURST START] Initiating wave stimulation (Burst #${activeBurst.id}, duration: ${Math.round(activeBurst.durationMs/60000)}m)`, "active");
+                }
+
+                const burstRemaining = activeBurst.endTime - elapsedTime;
+                stateTag.className = "px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-neon-pink/20 text-neon-pink border border-neon-pink/30 animate-pulse";
+                stateTag.innerText = "ACTIVE BURSTING";
+                mainStatusTitle.innerText = `Executing Organic Stimulation (Burst #${activeBurst.id})`;
+                currentActivityDesc.innerText = `Burst active. Time remaining in burst: ${formatMsToMS(burstRemaining)}`;
+                
+                nextBurstCountdown.innerText = "BURST IN PROGRESS";
+                monitorCard.className = "bg-slate-900/80 border border-brand-500/50 rounded-2xl p-6 glow-box-active backdrop-blur-sm relative overflow-hidden transition-all duration-500";
+
+            } else {
+                if (state.isBurstActive) {
+                    // Just ended a burst
+                    state.isBurstActive = false;
+                    sendVibrationLevel(0);
+                    logEvent(`[BURST END] Stimulation period ended. Entering rest phase.`, "info");
+                }
+
+                stateTag.className = "px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-slate-800 text-brand-400";
+                stateTag.innerText = "RESTING / WAITING";
+                mainStatusTitle.innerText = "Silent Monitoring Phase";
+                currentActivityDesc.innerText = "Engine idling quietly between scheduled stimulation windows.";
+                monitorCard.className = "bg-slate-900/80 border border-slate-800 rounded-2xl p-6 glow-box backdrop-blur-sm relative overflow-hidden transition-all duration-500";
+
+                // Update next burst countdown (Surprise mode check)
+                if (nextUpcomingBurst) {
+                    const timeToNext = nextUpcomingBurst.startTime - elapsedTime;
+                    if (chkSurpriseMode.checked) {
+                        nextBurstCountdown.innerText = "??? (Surprise Mode Active)";
+                    } else {
+                        nextBurstCountdown.innerText = `Next in ~${formatMsToMS(timeToNext)}`;
+                    }
+                } else {
+                    nextBurstCountdown.innerText = "No remaining bursts";
+                }
+            }
+        }
+
+        // --- ORGANIC WAVE ENGINE & MICRO-PAUSES (250ms TICK) ---
+        function waveEngineTick() {
+            if (!state.isRunning) return;
+
+            if (!state.isBurstActive) {
+                if (state.currentVibeLevel !== 0) {
+                    sendVibrationLevel(0);
+                }
+                pushWaveHistory(0);
+                return;
+            }
+
+            // Handle organic micro-pauses (Random breaks mid-burst)
+            if (chkMicroPauses.checked) {
+                // 3% chance every tick to toggle micro-pause for 3-7 seconds
+                if (!state.isMicroPaused && Math.random() < 0.02) {
+                    state.isMicroPaused = true;
+                    setTimeout(() => { state.isMicroPaused = false; }, (Math.random() * 5000 + 2000));
+                }
+            } else {
+                state.isMicroPaused = false;
+            }
+
+            if (state.isMicroPaused) {
+                sendVibrationLevel(0);
+                pushWaveHistory(0);
+                return;
+            }
+
+            // --- WAVE FUNCTION CALCULATIONS ---
+            state.waveTimeOffset += 0.1;
+            const t = state.waveTimeOffset;
+
+            // Combine multiple sine waves, cosine waves, and a tiny bit of pseudo-random noise
+            const primarySine = Math.sin(t * 0.5);              // Slow sweeping wave
+            const secondaryCos = Math.cos(t * 1.3) * 0.3;         // Medium accent wave
+            const rapidPulse = Math.sin(t * 3.1) * 0.15;          // Fast texture
+
+            // Normalize combined wave from [-1, 1] to [0, 1]
+            let combinedNormalized = (primarySine + secondaryCos + rapidPulse + 1.45) / 2.9;
+            combinedNormalized = Math.max(0, Math.min(1, combinedNormalized));
+
+            // Map to user min/max intensity range
+            const minLvl = parseInt(minIntensityInput.value);
+            const maxLvl = parseInt(maxIntensityInput.value);
+
+            let calculatedLevel = Math.round(minLvl + (combinedNormalized * (maxLvl - minLvl)));
+            calculatedLevel = Math.max(1, Math.min(20, calculatedLevel));
+
+            sendVibrationLevel(calculatedLevel);
+            pushWaveHistory(calculatedLevel);
+        }
+
+        function sendVibrationLevel(lvl) {
+            state.currentVibeLevel = lvl;
+            updateVibrationBar(lvl);
+
+            // Throttle duplicate HTTP requests if level hasn't changed
+            if (lvl === state.lastSentLevel) return;
+
+            state.lastSentLevel = lvl;
+            sendLovenseCommand(`Vibrate:${lvl}`);
+        }
+
+        function updateVibrationBar(lvl) {
+            liveLevelText.innerText = `LEVEL ${lvl} / 20`;
+            const percent = (lvl / 20) * 100;
+            vibrationBar.style.width = `${percent}%`;
+        }
+
+        // --- MANUAL OVERRIDE BURST ---
+        async function triggerManualBurst(level) {
+            logEvent(`[MANUAL] Sending direct 5-second pulse at Level ${level}`, "active");
+            sendLovenseCommand(`Vibrate:${level}`);
+            updateVibrationBar(level);
+
+            setTimeout(() => {
+                if (!state.isBurstActive) {
+                    sendLovenseCommand("Vibrate:0");
+                    updateVibrationBar(0);
+                }
+            }, 5000);
+        }
+
+        // --- REAL-TIME CANVAS WAVEFORM RENDERER ---
+        function pushWaveHistory(val) {
+            waveHistory.push(val);
+            if (waveHistory.length > 150) waveHistory.shift();
+        }
+
+        function drawWaveform() {
+            ctx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+            const w = waveCanvas.width;
+            const h = waveCanvas.height;
+            const step = w / waveHistory.length;
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#00f3ff';
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#00f3ff';
+
+            for (let i = 0; i < waveHistory.length; i++) {
+                const val = waveHistory[i];
+                const normalizedY = h - ((val / 20) * (h - 10) + 5);
+                const x = i * step;
+
+                if (i === 0) {
+                    ctx.moveTo(x, normalizedY);
+                } else {
+                    ctx.lineTo(x, normalizedY);
+                }
+            }
+            ctx.stroke();
+
+            // Gradient Fill under curve
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, 'rgba(0, 243, 255, 0.2)');
+            grad.addColorStop(1, 'rgba(0, 243, 255, 0.0)');
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 0;
+            ctx.fill();
+
+            requestAnimationFrame(drawWaveform);
+        }
+
+        // --- TELEMETRY LOG HELPER ---
+        function logEvent(msg, type = "info") {
+            const timeStr = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            
+            let colorClass = "text-slate-400";
+            if (type === "success") colorClass = "text-emerald-400 font-semibold";
+            if (type === "error") colorClass = "text-rose-400 font-semibold";
+            if (type === "active") colorClass = "text-neon-cyan font-semibold";
+
+            entry.className = colorClass;
+            entry.innerHTML = `<span class="text-slate-600 font-mono">[${timeStr}]</span> ${msg}`;
+            
+            eventLog.appendChild(entry);
+            eventLog.scrollTop = eventLog.scrollHeight;
+        }
+
+        // --- TIME FORMATTING HELPERS ---
+        function formatMsToHMS(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        function formatMsToMS(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${minutes}m ${seconds}s`;
+        }
+
+        function pad(num) {
+            return num.toString().padStart(2, '0');
+        }
+    </script>
+</body>
+</html>
